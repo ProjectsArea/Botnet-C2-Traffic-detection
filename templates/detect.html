@@ -1,0 +1,482 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Page Header -->
+    <div class="md:flex md:items-center md:justify-between mb-8">
+        <div class="flex-1 min-w-0">
+            <h2 class="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
+                Threat Detection Dashboard
+            </h2>
+            <p class="mt-1 text-sm text-gray-500">
+                Monitor and manage potential security threats in real-time
+            </p>
+        </div>
+        <div class="mt-4 flex md:mt-0 md:ml-4
+        ">
+            <button type="button" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                <i class="fas fa-sync-alt mr-2"></i>
+                Refresh
+            </button>
+            <button type="button" class="ml-3 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                <i class="fas fa-shield-alt mr-2"></i>
+                Run Scan
+            </button>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+        <!-- Total Threats Detected -->
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="px-4 py-5 sm:p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 bg-red-500 rounded-md p-3">
+                        <i class="fas fa-exclamation-triangle text-white text-xl"></i>
+                    </div>
+                    <div class="ml-5">
+                        <h3 class="text-lg font-medium text-gray-500">Total Threats</h3>
+                        <p class="text-3xl font-semibold text-gray-900" id="totalThreats">0</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Blocked IPs -->
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="px-4 py-5 sm:p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 bg-yellow-500 rounded-md p-3">
+                        <i class="fas fa-ban text-white text-xl"></i>
+                    </div>
+                    <div class="ml-5">
+                        <h3 class="text-lg font-medium text-gray-500">Blocked IPs</h3>
+                        <p class="text-3xl font-semibold text-gray-900" id="blockedIps">0</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- High Risk -->
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="px-4 py-5 sm:p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 bg-red-100 rounded-md p-3">
+                        <i class="fas fa-radiation text-red-600 text-xl"></i>
+                    </div>
+                    <div class="ml-5">
+                        <h3 class="text-lg font-medium text-gray-500">High Risk</h3>
+                        <p class="text-3xl font-semibold text-red-600" id="highRiskCount">0</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status -->
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="px-4 py-5 sm:p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 bg-green-100 rounded-md p-3">
+                        <i class="fas fa-shield-alt text-green-600 text-xl"></i>
+                    </div>
+                    <div class="ml-5">
+                        <h3 class="text-lg font-medium text-gray-500">Status</h3>
+                        <div class="flex items-center">
+                            <span class="text-green-600 font-semibold mr-2">Protected</span>
+                            <span class="h-2 w-2 rounded-full bg-green-500"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Threat Graph -->
+        <div class="lg:col-span-2">
+            <div class="bg-white shadow rounded-lg p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-lg font-medium text-gray-900">Threat Activity</h3>
+                    <div class="flex space-x-2">
+                        <button class="px-3 py-1 text-sm rounded-md bg-blue-100 text-blue-700">24h</button>
+                        <button class="px-3 py-1 text-sm rounded-md text-gray-500 hover:bg-gray-100">7d</button>
+                        <button class="px-3 py-1 text-sm rounded-md text-gray-500 hover:bg-gray-100">30d</button>
+                    </div>
+                </div>
+                <div class="h-80">
+                    <canvas id="threatChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Alerts -->
+        <div>
+            <div class="bg-white shadow rounded-lg p-6 h-full">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-lg font-medium text-gray-900">Recent Alerts</h3>
+                    <span class="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">
+                        <span id="alertCount">0</span> New
+                    </span>
+                </div>
+                <div class="space-y-4" id="alertsContainer">
+                    <!-- Alerts will be dynamically inserted here -->
+                    <div class="text-center py-4 text-gray-500">
+                        <p>No recent alerts</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Threat Table -->
+    <div class="mt-8 bg-white shadow rounded-lg overflow-hidden">
+        <div class="px-6 py-5 border-b border-gray-200 sm:flex sm:items-center sm:justify-between">
+            <h3 class="text-lg font-medium text-gray-900">Detected Threats</h3>
+            <div class="mt-3 sm:mt-0 sm:ml-4">
+                <div class="relative">
+                    <input type="text" id="searchThreats" class="block w-full pr-10 sm:text-sm border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" placeholder="Search threats...">
+                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                        <i class="fas fa-search text-gray-400"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Source IP</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Destination</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Threat Type</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Risk</th>
+                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="threatTableBody" class="bg-white divide-y divide-gray-200">
+                    <!-- Table rows will be dynamically inserted here -->
+                    <tr>
+                        <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">
+                            No threats detected
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+            <div class="flex-1 flex justify-between sm:hidden">
+                <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                    Previous
+                </a>
+                <a href="#" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                    Next
+                </a>
+            </div>
+            <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                <div>
+                    <p class="text-sm text-gray-700">
+                        Showing <span class="font-medium">1</span> to <span class="font-medium">10</span> of <span class="font-medium">0</span> results
+                    </p>
+                </div>
+                <div>
+                    <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                        <a href="#" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                            <span class="sr-only">Previous</span>
+                            <i class="fas fa-chevron-left h-5 w-5"></i>
+                        </a>
+                        <a href="#" aria-current="page" class="z-10 bg-blue-50 border-blue-500 text-blue-600 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                            1
+                        </a>
+                        <a href="#" class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                            2
+                        </a>
+                        <a href="#" class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                            3
+                        </a>
+                        <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
+                            ...
+                        </span>
+                        <a href="#" class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                            8
+                        </a>
+                        <a href="#" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                            <span class="sr-only">Next</span>
+                            <i class="fas fa-chevron-right h-5 w-5"></i>
+                        </a>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Block IP Modal -->
+<div id="blockIpModal" class="fixed z-10 inset-0 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" id="modalOverlay"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div class="sm:flex sm:items-start">
+                    <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                        <i class="fas fa-exclamation-triangle text-red-600"></i>
+                    </div>
+                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="modalTitle">Block IP Address</h3>
+                        <div class="mt-2">
+                            <p class="text-sm text-gray-500">Are you sure you want to block <span id="ipToBlock" class="font-medium">192.168.1.1</span>? This will prevent any further communication from this IP address.</p>
+                        </div>
+                        <div class="mt-4">
+                            <label for="blockReason" class="block text-sm font-medium text-gray-700">Reason (optional)</label>
+                            <input type="text" id="blockReason" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button type="button" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm" id="confirmBlock">
+                    Block IP
+                </button>
+                <button type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm" id="cancelBlock">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Initialize charts and data when the document is ready
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize threat chart
+    const threatCtx = document.getElementById('threatChart').getContext('2d');
+    const threatChart = new Chart(threatCtx, {
+        type: 'line',
+        data: {
+            labels: Array.from({length: 24}, (_, i) => `${i}:00`),
+            datasets: [{
+                label: 'Threats',
+                data: Array(24).fill(0).map(() => Math.floor(Math.random() * 50)),
+                borderColor: '#3B82F6',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                tension: 0.3,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        drawBorder: false
+                    },
+                    ticks: {
+                        stepSize: 10
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+
+    // Sample data for threats
+    const sampleThreats = [
+        { 
+            id: 1, 
+            time: new Date().toLocaleTimeString(), 
+            ip: '192.168.1.10', 
+            destination: 'api.malicious-domain.com',
+            type: 'C2 Communication',
+            risk: 'High',
+            status: 'New'
+        },
+        { 
+            id: 2, 
+            time: new Date(Date.now() - 1000 * 60 * 5).toLocaleTimeString(), 
+            ip: '10.0.0.5', 
+            destination: '45.153.231.12',
+            type: 'Data Exfiltration',
+            risk: 'Critical',
+            status: 'New'
+        },
+        { 
+            id: 3, 
+            time: new Date(Date.now() - 1000 * 60 * 15).toLocaleTimeString(), 
+            ip: '192.168.1.15', 
+            destination: 'legit-domain.com',
+            type: 'Suspicious Activity',
+            risk: 'Medium',
+            status: 'In Review'
+        },
+        { 
+            id: 4, 
+            time: new Date(Date.now() - 1000 * 60 * 30).toLocaleTimeString(), 
+            ip: '10.0.0.8', 
+            destination: '192.168.1.100',
+            type: 'Port Scan',
+            risk: 'Low',
+            status: 'Resolved'
+        },
+        { 
+            id: 5, 
+            time: new Date(Date.now() - 1000 * 60 * 60).toLocaleTimeString(), 
+            ip: '185.220.101.5', 
+            destination: 'internal-server.local',
+            type: 'Malware Download',
+            risk: 'Critical',
+            status: 'Blocked'
+        }
+    ];
+
+    // Render threats table
+    function renderThreats(threats) {
+        const tbody = document.getElementById('threatTableBody');
+        tbody.innerHTML = '';
+        
+        if (threats.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">
+                        No threats detected
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        threats.forEach(threat => {
+            let riskClass = '';
+            if (threat.risk === 'High' || threat.risk === 'Critical') {
+                riskClass = 'text-red-600';
+            } else if (threat.risk === 'Medium') {
+                riskClass = 'text-yellow-600';
+            } else {
+                riskClass = 'text-green-600';
+            }
+
+            const row = document.createElement('tr');
+            row.className = 'hover:bg-gray-50';
+            row.innerHTML = `
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${threat.time}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${threat.ip}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${threat.destination}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${threat.type}</td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${riskClass}">
+                        ${threat.risk}
+                    </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <button class="text-blue-600 hover:text-blue-900 mr-3" onclick="viewThreatDetails(${threat.id})">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    <button class="text-red-600 hover:text-red-900" onclick="openBlockModal('${threat.ip}')">
+                        <i class="fas fa-ban"></i>
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+
+    // Update stats
+    function updateStats() {
+        document.getElementById('totalThreats').textContent = sampleThreats.length;
+        document.getElementById('highRiskCount').textContent = sampleThreats.filter(t => t.risk === 'High' || t.risk === 'Critical').length;
+        document.getElementById('alertCount').textContent = sampleThreats.filter(t => t.status === 'New').length;
+        
+        // Get blocked IPs count from the server
+        fetch('/api/blocked-ips')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('blockedIps').textContent = data.length;
+            });
+    }
+
+    // Open block IP modal
+    window.openBlockModal = function(ip) {
+        document.getElementById('ipToBlock').textContent = ip;
+        document.getElementById('blockIpModal').classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    };
+
+    // Close block IP modal
+    function closeBlockModal() {
+        document.getElementById('blockIpModal').classList.add('hidden');
+        document.body.style.overflow = 'auto';
+        document.getElementById('blockReason').value = '';
+    }
+
+    // Event listeners for block IP modal
+    document.getElementById('cancelBlock').addEventListener('click', closeBlockModal);
+    document.getElementById('modalOverlay').addEventListener('click', closeBlockModal);
+    
+    document.getElementById('confirmBlock').addEventListener('click', function() {
+        const ip = document.getElementById('ipToBlock').textContent;
+        const reason = document.getElementById('blockReason').value;
+        
+        // Send block request to server
+        fetch('/api/block-ip', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ ip: ip, reason: reason })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                alert(`Successfully blocked IP: ${ip}`);
+                updateStats();
+            } else {
+                alert(`Error: ${data.message}`);
+            }
+            closeBlockModal();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while blocking the IP');
+            closeBlockModal();
+        });
+    });
+
+    // Search functionality
+    document.getElementById('searchThreats').addEventListener('input', function(e) {
+        const searchTerm = e.target.value.toLowerCase();
+        const filteredThreats = sampleThreats.filter(threat => 
+            threat.ip.toLowerCase().includes(searchTerm) ||
+            threat.destination.toLowerCase().includes(searchTerm) ||
+            threat.type.toLowerCase().includes(searchTerm) ||
+            threat.risk.toLowerCase().includes(searchTerm)
+        );
+        renderThreats(filteredThreats);
+    });
+
+    // View threat details (placeholder function)
+    window.viewThreatDetails = function(threatId) {
+        const threat = sampleThreats.find(t => t.id === threatId);
+        if (threat) {
+            alert(`Threat Details:\nIP: ${threat.ip}\nType: ${threat.type}\nRisk: ${threat.risk}\nTime: ${threat.time}\nStatus: ${threat.status}`);
+        }
+    };
+
+    // Initialize the page
+    renderThreats(sampleThreats);
+    updateStats();
+});
+</script>
+{% endblock %}

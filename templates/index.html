@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <!-- Hero Section -->
+    <div class="text-center mb-16">
+        <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-6">Advanced Botnet C2 Traffic Monitor</h1>
+        <p class="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
+            Real-time detection and analysis of Command and Control (C2) traffic patterns to protect your network from botnet threats.
+        </p>
+        <div class="flex flex-col sm:flex-row justify-center gap-4">
+            <a href="{{ url_for('detect') }}" class="btn-primary inline-flex items-center justify-center w-48">
+                <i class="fas fa-shield-alt mr-2"></i> Start Detection
+            </a>
+            <a href="#features" class="bg-white text-blue-600 border border-blue-600 px-6 py-3 rounded-lg hover:bg-blue-50 transition-colors duration-200 inline-flex items-center justify-center">
+                Learn More
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats Overview -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
+        <div class="card p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-blue-100 text-blue-600 mr-4">
+                    <i class="fas fa-shield-alt text-xl"></i>
+                </div>
+                <div>
+                    <p class="text-gray-500 text-sm">Threats Blocked</p>
+                    <h3 class="text-2xl font-bold text-gray-900">1,248</h3>
+                </div>
+            </div>
+        </div>
+        <div class="card p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-green-100 text-green-600 mr-4">
+                    <i class="fas fa-check-circle text-xl"></i>
+                </div>
+                <div>
+                    <p class="text-gray-500 text-sm">Secure Networks</p>
+                    <h3 class="text-2xl font-bold text-gray-900">98.7%</h3>
+                </div>
+            </div>
+        </div>
+        <div class="card p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-purple-100 text-purple-600 mr-4">
+                    <i class="fas fa-bolt text-xl"></i>
+                </div>
+                <div>
+                    <p class="text-gray-500 text-sm">Response Time</p>
+                    <h3 class="text-2xl font-bold text-gray-900">0.2s</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features Section -->
+    <div id="features" class="mb-20">
+        <h2 class="text-3xl font-bold text-center mb-12">Powerful Features</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div class="card p-6 hover:shadow-xl transition-shadow duration-300">
+                <div class="text-blue-600 mb-4">
+                    <i class="fas fa-bolt text-3xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold mb-3">Real-time Monitoring</h3>
+                <p class="text-gray-600">Continuously monitor network traffic for suspicious C2 communications in real-time.</p>
+            </div>
+            <div class="card p-6 hover:shadow-xl transition-shadow duration-300">
+                <div class="text-green-600 mb-4">
+                    <i class="fas fa-robot text-3xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold mb-3">AI-Powered Detection</h3>
+                <p class="text-gray-600">Advanced machine learning models to detect even the most sophisticated botnet activities.</p>
+            </div>
+            <div class="card p-6 hover:shadow-xl transition-shadow duration-300">
+                <div class="text-purple-600 mb-4">
+                    <i class="fas fa-shield-virus text-3xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold mb-3">Threat Intelligence</h3>
+                <p class="text-gray-600">Access to up-to-date threat intelligence feeds for comprehensive protection.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- CTA Section -->
+    <div class="bg-blue-700 rounded-2xl p-8 md:p-12 text-center text-white">
+        <h2 class="text-3xl font-bold mb-4">Ready to Secure Your Network?</h2>
+        <p class="text-blue-100 mb-8 max-w-2xl mx-auto">
+            Join thousands of organizations that trust our solution to protect their networks from botnet threats.
+        </p>
+        <a href="{{ url_for('detect') }}" class="inline-block bg-white text-blue-700 px-8 py-3 rounded-lg font-medium hover:bg-blue-50 transition-colors duration-200">
+            Get Started Now
+        </a>
+    </div>
+</div>
+{% endblock %}

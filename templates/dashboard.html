@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Botnet C2 Detection Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            padding: 20px;
+        }
+
+        h2 { margin-bottom: 10px; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+        }
+
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: center;
+        }
+
+        th {
+            background: #222;
+            color: white;
+        }
+
+        .MALICIOUS { background-color: #ffd6d6; }
+        .BENIGN { background-color: #d6ffd6; }
+    </style>
+</head>
+
+<body>
+
+<div class="content-wrapper">
+    <div class="mb-6">
+        <a href="{{ url_for('home') }}" class="inline-flex items-center text-blue-600 hover:text-blue-800">
+            <i class="fas fa-arrow-left mr-2"></i> Back to Home
+        </a>
+    </div>
+    <h2>📊 Botnet C2 Risk Monitor</h2>
+
+<canvas id="riskChart" height="100"></canvas>
+
+<h3>🚨 Attack Logs</h3>
+
+<table>
+    <thead>
+        <tr>
+            <th>Time</th>
+            <th>Source IP</th>
+            <th>Risk</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody id="logTable"></tbody>
+</table>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const logTable = document.getElementById("logTable");
+
+    const ctx = document.getElementById("riskChart").getContext("2d");
+    const labels = [];
+    const risks = [];
+
+    const chart = new Chart(ctx, {
+        type: "line",
+        data: {
+            labels: labels,
+            datasets: [{
+                label: "Risk Score",
+                data: risks,
+                borderWidth: 2,
+                tension: 0.3
+            }]
+        }
+    });
+
+    function updateFlow() {
+        fetch("/api/flows")
+            .then(res => res.json())
+            .then(data => {
+                labels.push(data.time);
+                risks.push(data.risk);
+
+                if (labels.length > 20) {
+                    labels.shift();
+                    risks.shift();
+                }
+                chart.update();
+            });
+    }
+
+    function updateLogs() {
+        fetch("/api/logs")
+            .then(res => res.json())
+            .then(rows => {
+                logTable.innerHTML = "";
+
+                rows.slice().reverse().forEach(row => {
+                    const tr = document.createElement("tr");
+                    tr.className = row.status;
+
+                    tr.innerHTML = `
+                        <td>${row.time}</td>
+                        <td>${row.ip}</td>
+                        <td>${row.risk}</td>
+                        <td>${row.status}</td>
+                    `;
+
+                    logTable.appendChild(tr);
+                });
+            });
+    }
+
+    setInterval(() => {
+        updateFlow();
+        updateLogs();
+    }, 2000);
+});
+</script>
+
+</body>
+</html>
